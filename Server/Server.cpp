@@ -76,11 +76,11 @@ int main()
     }
 	
 	// Disable receiving only IPv6 packets. We want to receive both IPv4 and IPv6 packets.
-	/*char no = 0;     
+	char no = 0;     
 	int ipv6_Result = setsockopt(ipv6_listen_socket, IPPROTO_IPV6, IPV6_V6ONLY, &no, sizeof(no));
 	int ipv4_Result;
 	if (ipv6_Result == SOCKET_ERROR) 
-			printf("failed with error: %u\n", WSAGetLastError());*/
+			printf("failed with error: %u\n", WSAGetLastError());
 	int ipv6_Result, ipv4_Result;
 
 
@@ -144,8 +144,6 @@ int main()
 
     closesocket(ipv4_listen_socket);
 
-	char c;
-	scanf(&c);
     // Main server loop
     while(1)
     {
@@ -160,12 +158,7 @@ int main()
 		int sockAddrLen = sizeof(clientAddress);
 
 		// Receive client message
-        ipv6_Result = recvfrom(ipv6_listen_socket,						// Own socket
-			               dataBuffer,							// Buffer that will be used for receiving message
-						   BUFFER_SIZE,							// Maximal size of buffer
-						   0,									// No flags
-						   (struct sockaddr *)&clientAddress,	// Client information from received message (ip address and port)
-						   &sockAddrLen);						// Size of sockadd_in structure
+        ipv6_Result = recv(ipv6_listen_socket, dataBuffer, BUFFER_SIZE, 0);
 		
 		// Check if message is succesfully received
 		if (ipv6_Result == SOCKET_ERROR)

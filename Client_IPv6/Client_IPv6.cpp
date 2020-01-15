@@ -57,8 +57,8 @@ int main()
 
 	// Create a socket
     SOCKET clientSocket = socket(AF_INET6,      // IPv6 address famly
-								 SOCK_DGRAM,   // Datagram socket
-								 IPPROTO_UDP); // UDP protocol
+								 SOCK_STREAM, 
+								 IPPROTO_TCP);
 
 	// Check if socket creation succeeded
     if (clientSocket == INVALID_SOCKET)
@@ -67,6 +67,14 @@ int main()
         WSACleanup();
         return 1;
     }
+
+	iResult = connect (clientSocket, (struct sockaddr *)&serverAddress, sockAddrLen);
+	if (iResult == SOCKET_ERROR)
+	{
+		printf("Unable to connect to server\n");
+		WSACleanup();
+		return 1;
+	}
 	
 	while(1)
 	{
@@ -76,12 +84,7 @@ int main()
 		gets_s(dataBuffer, BUFFER_SIZE);
 	
 		// Send message to server
-		iResult = sendto(clientSocket,						// Own socket
-						 dataBuffer,						// Text of message
-						 strlen(dataBuffer),				// Message size
-						 0,									// No flags
-						 (SOCKADDR *)&serverAddress,		// Address structure of server (type, IP address and port)
-						 sizeof(serverAddress));			// Size of sockadr_in structure
+		iResult = send(clientSocket, dataBuffer, BUFFER_SIZE, 0);
 
 		// Check if message is succesfully sent. If not, close client application
 		if (iResult == SOCKET_ERROR)
