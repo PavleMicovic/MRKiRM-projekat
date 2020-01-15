@@ -48,19 +48,13 @@ int main()
     serverAddress.sin6_port = htons(SERVER_PORT);	// Set server port
 	serverAddress.sin6_flowinfo = 0;				// flow info
 
-	memset((char*)&ipv4_server_Address, 0, sizeof(ipv4_server_Address));
-	ipv4_server_Address.sin_family = AF_INET;
-	inet_pton(AF_INET, "127.0.0.1", &ipv4_server_Address.sin_addr);
-	ipv4_server_Address.sin_port = SERVER_PORT;
-
     // Create a socket 
     SOCKET ipv6_listen_socket = socket(AF_INET6,      // IPv6 address famly
 								 SOCK_STREAM,   // datagram socket
 								 IPPROTO_TCP); // TCP umesto UDP
 
-	SOCKET ipv4_listen_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
-	SOCKET ipv6_client_socket, ipv4_client_socket;
+	SOCKET ipv6_client_socket;
 	// Check if socket creation succeeded
     if (ipv6_listen_socket == INVALID_SOCKET)
     {
@@ -68,25 +62,17 @@ int main()
         WSACleanup();
         return 1;
     }
-	if (ipv4_listen_socket == INVALID_SOCKET)
-    {
-        printf("Creating socket failed with error: %d\n", WSAGetLastError());
-        WSACleanup();
-        return 1;
-    }
 	
 	// Disable receiving only IPv6 packets. We want to receive both IPv4 and IPv6 packets.
-	char no = 0;     
-	int ipv6_Result = setsockopt(ipv6_listen_socket, IPPROTO_IPV6, IPV6_V6ONLY, &no, sizeof(no));
+	char no[4] = {0};
+	int ipv6_Result = setsockopt(ipv6_listen_socket, IPPROTO_IPV6, IPV6_V6ONLY, (const char *)no, sizeof(no));
 	int ipv4_Result;
 	if (ipv6_Result == SOCKET_ERROR) 
 			printf("failed with error: %u\n", WSAGetLastError());
-	int ipv6_Result, ipv4_Result;
 
 
     // Bind server address structure (type, port number and local address) to socket
     ipv6_Result = bind(ipv6_listen_socket,(SOCKADDR *)&serverAddress, sizeof(serverAddress));
-	ipv4_Result = bind(ipv4_listen_socket, (SOCKADDR *)&ipv4_server_Address, sizeof(ipv4_server_Address));
 	// Check if socket is succesfully binded to server datas
 
     if (ipv6_Result == SOCKET_ERROR)
@@ -96,17 +82,10 @@ int main()
         WSACleanup();
         return 1;
     }
-
-	if (ipv4_Result == SOCKET_ERROR)
-    {
-        printf("Socket bind failed with error: %d\n", WSAGetLastError());
-        closesocket(ipv6_listen_socket);
-        WSACleanup();
-        return 1;
-    }
-	printf("Simple TCP server waiting client messages.\n");
+	
+	printf("Simple TCP server waiting for client messages.\n");
 	ipv6_Result = listen(ipv6_listen_socket, SOMAXCONN);
-	ipv4_Result = listen(ipv4_listen_socket, SOMAXCONN);
+	
 
 	if (ipv6_Result == SOCKET_ERROR)
 	{
@@ -115,16 +94,10 @@ int main()
         WSACleanup();
         return 1;
 	}
-
-	if (ipv4_Result == SOCKET_ERROR)
-	{
-		printf("listen failed with error: %d\n", WSAGetLastError());
-		closesocket(ipv6_listen_socket);
-        WSACleanup();
-        return 1;
-	}
-
-	ipv6_client_socket = accept(ipv6_listen_socket, NULL, NULL);
+	sockaddr_in6 clientAddress;
+	memset(&clientAddress, 0, sizeof(clientAddress));
+	int sockAddrLen = sizeof(clientAddress);
+	ipv6_client_socket = accept(ipv6_listen_socket, (struct sockaddr *)&clientAddress, &sockAddrLen);
     if (ipv6_client_socket == INVALID_SOCKET) {
         printf("accept failed with error: %d\n", WSAGetLastError());
         closesocket(ipv6_listen_socket);
@@ -133,38 +106,20 @@ int main()
     }
 
 	closesocket(ipv6_listen_socket);
-
-	ipv4_client_socket = accept(ipv4_listen_socket, NULL, NULL);
-    if (ipv4_client_socket == INVALID_SOCKET) {
-        printf("accept failed with error: %d\n", WSAGetLastError());
-        closesocket(ipv4_listen_socket);
-        WSACleanup();
-        return 1;
-    }
-
-    closesocket(ipv4_listen_socket);
-
     // Main server loop
-    while(1)
+    do
     {
-        // Declare and initialize client address that will be set from recvfrom
-        sockaddr_in6 clientAddress;
-		memset(&clientAddress, 0, sizeof(clientAddress));
-
 		// Set whole buffer to zero
         memset(dataBuffer, 0, BUFFER_SIZE);
 
-		// size of client address
-		int sockAddrLen = sizeof(clientAddress);
-
 		// Receive client message
-        ipv6_Result = recv(ipv6_listen_socket, dataBuffer, BUFFER_SIZE, 0);
+        ipv6_Result = recv(ipv6_client_socket, dataBuffer, BUFFER_SIZE, 0);
 		
 		// Check if message is succesfully received
 		if (ipv6_Result == SOCKET_ERROR)
 		{
 			printf("recvfrom failed with error: %d\n", WSAGetLastError());
-			continue;
+			break;
 		}
 
         char ipAddress[INET6_ADDRSTRLEN]; // INET6_ADDRSTRLEN 65 spaces for hexadecimal notation of IPv6
@@ -188,7 +143,7 @@ int main()
 			printf("IPv6 Client connected from ip: %s, port: %d, sent: %s.\n", ipAddress, clientPort, dataBuffer);
 		
 		// Possible server-shutdown logic could be put here
-    }
+    }while (ipv6_Result > 0);
 
     // Close server application
     ipv6_Result = closesocket(ipv6_client_socket);
@@ -198,20 +153,10 @@ int main()
 		WSACleanup();
         return 1;
     }
-
-	 ipv4_Result = closesocket(ipv4_client_socket);
-    if (ipv4_Result == SOCKET_ERROR)
-    {
-        printf("closesocket failed with error: %ld\n", WSAGetLastError());
-		WSACleanup();
-        return 1;
-    }
-	
 	printf("Server successfully shut down.\n");
 	
 	// Close Winsock library
 	WSACleanup();
-	_getch();
 	return 0;
 }
 

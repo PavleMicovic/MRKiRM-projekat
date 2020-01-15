@@ -68,7 +68,7 @@ int main()
         return 1;
     }
 
-	iResult = connect (clientSocket, (struct sockaddr *)&serverAddress, sockAddrLen);
+	iResult = connect (clientSocket, (struct sockaddr *)&serverAddress, sizeof(serverAddress));
 	if (iResult == SOCKET_ERROR)
 	{
 		printf("Unable to connect to server\n");
@@ -82,7 +82,6 @@ int main()
 
 		// Read string from user into outgoing buffer
 		gets_s(dataBuffer, BUFFER_SIZE);
-	
 		// Send message to server
 		iResult = send(clientSocket, dataBuffer, BUFFER_SIZE, 0);
 
