@@ -121,7 +121,6 @@ int main()
 			printf("recvfrom failed with error: %d\n", WSAGetLastError());
 			break;
 		}
-
         char ipAddress[INET6_ADDRSTRLEN]; // INET6_ADDRSTRLEN 65 spaces for hexadecimal notation of IPv6
 		
 		// Copy client ip to local char[]
@@ -138,9 +137,9 @@ int main()
 			
 			// Copy client ip to local char[]
 			strcpy_s(ipAddress1, sizeof(ipAddress1), inet_ntoa( *ipv4 ));
-			printf("IPv4 Client connected from ip: %s, port: %d, sent: %s.\n", ipAddress1, clientPort, dataBuffer);
+			printf("IPv4 Client connected from ip: %s, port: %d, sent: %s.\n---------------\n", ipAddress1, clientPort, dataBuffer);
 		}else
-			printf("IPv6 Client connected from ip: %s, port: %d, sent: %s.\n", ipAddress, clientPort, dataBuffer);
+			printf("IPv6 Client connected from ip: %s, port: %d, sent: %s.\n---------------\n", ipAddress, clientPort, dataBuffer);
 		
 		// Possible server-shutdown logic could be put here
     }while (ipv6_Result > 0);

@@ -22,6 +22,8 @@
 
 int main()
 {
+	FILE *file;
+	int offset_bytes, send_length, send_times, i = 0; //variables for choosing file segment to send
     // Server address structure
     sockaddr_in6 serverAddress;
 
@@ -75,18 +77,24 @@ int main()
 		WSACleanup();
 		return 1;
 	}
-	FILE *f;
-	if ( (f = fopen("LoremIpsum.txt", "r")) == NULL)
+
+	if ( (file = fopen("LoremIpsum.txt", "r")) == NULL)
 	{
 		printf("Error opening file\n");
 		return 1;
 	}
-	fread(dataBuffer, sizeof(char), BUFFER_SIZE, f);
-	printf("%s\n", dataBuffer);
-	getch();
-	while(fread(dataBuffer, sizeof(char), BUFFER_SIZE, f) == BUFFER_SIZE)
+	printf("Input offset in bytes:\t");
+	scanf("%d", &offset_bytes);
+	printf("Input sending duration(length):\t");
+	scanf("%d", &send_length);
+	send_times = send_length/BUFFER_SIZE + (((send_length % BUFFER_SIZE) != 0) ? 1 : 0); //number of times client sends message
+	fseek(file, offset_bytes, SEEK_SET);
+	while (i < send_times)
 	{
+		if (fgets(dataBuffer, BUFFER_SIZE, file) == NULL)
+			break;
 		// Send message to server
+		printf("%s\n", dataBuffer);
 		iResult = send(clientSocket, dataBuffer, BUFFER_SIZE, 0);
 
 		// Check if message is succesfully sent. If not, close client application
@@ -97,9 +105,10 @@ int main()
 			WSACleanup();
 			return 1;
 		}
+		i++;
 	}
 
-
+	fclose(file);
 	// Close client application
     iResult = closesocket(clientSocket);
     if (iResult == SOCKET_ERROR)

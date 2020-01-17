@@ -72,14 +72,14 @@ int main()
 		WSACleanup();
 		return 1;
 	}
-
-	while(1)
-    {
-		printf("Enter message to send:\n");
-
-		// Read string from user into outgoing buffer
-		gets_s(dataBuffer, BUFFER_SIZE);
-	
+	FILE *f;
+	if ( (f = fopen("LoremIpsum.txt", "r")) == NULL)
+	{
+		printf("Error opening file\n");
+		return 1;
+	}
+	while(fgets(dataBuffer, BUFFER_SIZE, f) != NULL)
+    {	
 		// Send message to server
 		iResult = send(clientSocket, dataBuffer, BUFFER_SIZE, 0);
 
@@ -92,9 +92,6 @@ int main()
 			return 1;
 		}
 	}
-	// Only for demonstration purpose
-	printf("Press any key to exit: ");
-	_getch();
 
 	// Close client application
     iResult = closesocket(clientSocket);

@@ -1,9 +1,9 @@
-﻿Build started 1/15/2020 4:23:54 PM.
-     1>Project "D:\ra207-2016\projekat\Client_IPv6\Client_IPv6.vcxproj" on node 2 (clean target(s)).
+﻿Build started 17-Jan-20 11:54:37 AM.
+     1>Project "D:\Faks\mrkirm\MRKiRM-projekat\Client_IPv6\Client_IPv6.vcxproj" on node 2 (clean target(s)).
      1>_PrepareForClean:
          Deleting file "Debug\Client_IPv6.lastbuildstate".
-     1>Done Building Project "D:\ra207-2016\projekat\Client_IPv6\Client_IPv6.vcxproj" (clean target(s)).
+     1>Done Building Project "D:\Faks\mrkirm\MRKiRM-projekat\Client_IPv6\Client_IPv6.vcxproj" (clean target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:00.00
+Time Elapsed 00:00:00.01
