@@ -7,9 +7,8 @@
 #include <ws2tcpip.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <map>
-#include <tuple>
 #include "conio.h"
+#include "functions.h"
 
 #pragma comment (lib, "Ws2_32.lib")
 #pragma comment (lib, "Mswsock.lib")
@@ -19,9 +18,75 @@
 #define SERVER_PORT 27015					// Port number of server that will be used for communication with clients
 #define BUFFER_SIZE 512						// Size of buffer that will be used for sending and receiving messages to client
 
+std::map<int, char> encode_map;
 
+void encode(char* buff, int buff_size)
+{
+	for(int i = 0; i < buff_size; i++)
+	{
+
+		for (auto it = encode_map.begin(); it != encode_map.end(); it++)
+		{
+			if(buff[i] == it->second || buff[i] == (it->second + 32))
+            {
+                printf("buff = %c\t it = %c\n", buff[i], it->second);
+                buff[i] = it->first;
+            }
+
+		}
+	}
+}
+
+void decode(char* buff, int buff_size)
+{
+	for(int i = 0; i < buff_size; i++)
+	{
+		for (auto it = encode_map.begin(); it != encode_map.end(); it++)
+		{
+			if(buff[i] == it->first)
+            {
+                printf("buff = %c\t it = %c\n", buff[i], it->second);
+                buff[i] = it->second;
+            }
+
+		}
+	}
+}
+
+void fill_map()
+{
+	encode_map[95] = 'A';
+	encode_map[63] = 'B';
+	encode_map[29] = 'C';
+	encode_map[57] = 'D';
+	encode_map[98] = 'E';
+	encode_map[25] = 'F';
+	encode_map[26] = 'G';
+	encode_map[27] = 'H';
+	encode_map[59] = 'I';
+	encode_map[11] = 'J';
+	encode_map[22] = 'K';
+	encode_map[96] = 'L';
+	encode_map[38] = 'M';
+	encode_map[40] = 'N';
+	encode_map[33] = 'O';
+	encode_map[64] = 'P';
+	encode_map[47] = 'Q';
+	encode_map[43] = 'R';
+	encode_map[17] = 'S';
+	encode_map[91] = 'T';
+	encode_map[23] = 'U';
+	encode_map[18] = 'V';
+	encode_map[36] = 'W';
+	encode_map[94] = 'X';
+	encode_map[41] = 'Y';
+	encode_map[50] = 'Z';
+	encode_map[42] = ' ';
+}
 int main()
 {
+	fill_map();
+
 	FILE *file;
 	int offset_bytes, send_length, send_times, i = 0; //variables for choosing file segment to send
     // Server address structure
@@ -91,10 +156,11 @@ int main()
 	fseek(file, offset_bytes, SEEK_SET);
 	while (i < send_times)
 	{
-		if (fgets(dataBuffer, BUFFER_SIZE, file) == NULL)
+		if (fgets(dataBuffer, BUFFER_SIZE, file) == NULL) //in case of EOF or error break
 			break;
-		// Send message to server
-		printf("%s\n", dataBuffer);
+		printf("Pre enkodovanja:%s\n", dataBuffer);
+		encode(dataBuffer, BUFFER_SIZE); //encryption
+		printf("Posle enkodovanja:%s\n", dataBuffer);
 		iResult = send(clientSocket, dataBuffer, BUFFER_SIZE, 0);
 
 		// Check if message is succesfully sent. If not, close client application
